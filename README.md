@@ -1,5 +1,7 @@
 # hs-luis-client
 
+[![Hackage](https://img.shields.io/hackage/v/luis-client.svg)](https://hackage.haskell.org/package/luis-client)
+
 An unofficial Haskell client for Microsoft's [LUIS](https://www.luis.ai) natural language processing API.
 
 ## Examples
