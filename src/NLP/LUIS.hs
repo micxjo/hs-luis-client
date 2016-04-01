@@ -24,6 +24,19 @@ module NLP.LUIS ( -- * Querying
                     , Intent
                     , intentType
                     , intentScore
+                    , intentActions
+                    , Action
+                    , actionName
+                    , actionTriggered
+                    , actionParams
+                    , Param
+                    , paramName
+                    , paramRequired
+                    , paramValues
+                    , ParamValue
+                    , paramValueEntity
+                    , paramValueType
+                    , paramValueScore
                       -- * Entity Type
                     , Entity
                     , entityType
@@ -48,15 +61,50 @@ import Data.Vector (Vector)
 import Network.HTTP.Client (HttpException)
 import Network.Wreq hiding (Response)
 
+data ParamValue = ParamValue
+                  { _paramValueEntity :: !Text
+                  , _paramValueType :: !Text
+                  , _paramValueScore :: !Double
+                  } deriving (Eq, Show, Read, Typeable, Data, Generic)
+
+makeLenses ''ParamValue
+
+instance FromJSON ParamValue where
+  parseJSON = withObject "param value" $ \o ->
+    ParamValue <$> o .: "entity" <*> o .: "type" <*> o .: "score"
+
+data Param = Param { _paramName :: !Text
+                   , _paramRequired :: !Bool
+                   , _paramValues :: !(Maybe (Vector ParamValue))
+                   } deriving (Eq, Show, Read, Typeable, Data, Generic)
+
+makeLenses ''Param
+
+instance FromJSON Param where
+  parseJSON = withObject "param" $ \o ->
+    Param <$> o .: "name" <*> o .: "required" <*> o .: "value"
+
+data Action = Action { _actionName :: !Text
+                     , _actionTriggered :: !Bool
+                     , _actionParams :: !(Vector Param)
+                     } deriving (Eq, Show, Read, Typeable, Data, Generic)
+
+makeLenses ''Action
+
+instance FromJSON Action where
+  parseJSON = withObject "action" $ \o ->
+    Action <$> o .: "name" <*> o .: "triggered" <*> o .: "parameters"
+
 data Intent = Intent { _intentType :: !Text
                      , _intentScore :: !Double
+                     , _intentActions :: !(Maybe (Vector Action))
                      } deriving (Eq, Show, Read, Typeable, Data, Generic)
 
 makeLenses ''Intent
 
 instance FromJSON Intent where
   parseJSON = withObject "intent" $ \o ->
-    Intent <$> o .: "intent" <*> o .: "score"
+    Intent <$> o .: "intent" <*> o .: "score" <*> o .: "actions"
 
 data Entity = Entity { _entityText :: !Text
                      , _entityType :: !Text
