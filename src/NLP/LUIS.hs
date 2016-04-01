@@ -3,6 +3,14 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RecordWildCards #-}
+{-|
+Module         : NLP.LUIS
+Description    : An unofficial client for the LUIS NLP service.
+Copyright      : (c) 2016 Micxjo Funkcio
+License        : BSD3
+Maintainer     : micxjo@fastmail.com
+Stability      : experimental
+-}
 module NLP.LUIS ( -- * Querying
                       query
                     , queryExc
@@ -88,11 +96,13 @@ instance Exception LUISError where
     where he = HttpError <$> fromException e
           je = ResponseError <$> fromException e
 
+-- | Application credentials for a LUIS model.
 data Credentials = Credentials
                    { applicationId :: !Text
                    , subscriptionKey :: !Text
                    } deriving (Show, Read, Eq, Typeable, Data, Generic)
 
+-- | Query a LUIS model. An 'HttpException' or 'JSONError' may be thrown.
 queryExc :: Credentials -> Text -> IO Response
 queryExc Credentials{..} str = do
   let opts = defaults & param "id" .~ [applicationId]
@@ -102,5 +112,6 @@ queryExc Credentials{..} str = do
   luisResp <- asJSON resp
   return (luisResp ^. responseBody)
 
+-- | Query a LUIS model.
 query :: Credentials -> Text -> IO (Either LUISError Response)
 query creds str = try (queryExc creds str)
